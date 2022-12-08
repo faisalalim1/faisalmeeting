@@ -2,24 +2,31 @@ import React, { useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 
+let init = {
+  date: new Date().toLocaleDateString(),
+  startTime: "",
+  finishTime:""
+}
 function Main() {
-  const [date, setDate] = useState(new Date());
-  const [starttime, setStarttime] = useState("");
-  const [finishtime, setFinishtime] = useState("");
+  const [meet, setMeet] = useState(init);
   const [final, setFinal] = useState([]);
-  const [filteredList, setFilteredList] = useState([]);
 
+  const handelChange = (e) => {
+    const { name, value } = e.target;
+    console.log(e.target)
+    setMeet({ ...meet, [name]: value });
+ }
 
+   console.log(meet,"/n")
+  const handleSubmit = () => {
 
-  const handleSubmit = (e) => {
-
-    const time1 = starttime;
-    const time2 = finishtime;
+    const time1 = meet.startTime;
+    const time2 = meet.finishTime;
 
     const [hours1, minutes1] = time1.split(":");
 
     const [hours2, minutes2] = time2.split(":");
-    const newdate = new Date(date).toLocaleDateString();
+    const newdate = new Date(meet.date).toLocaleDateString();
     const [day, month, year] = newdate.split("/");
     console.log(newdate);
     const date1 = new Date(year, +month, +day, +hours1, +minutes1).getTime();
@@ -28,21 +35,19 @@ function Main() {
 
     let payload = {
       date: newdate,
-      dateSec: new Date(date).getTime(),
-      starttime,
+      dateSec: new Date(meet.date).getTime(),
+      startTime:meet.startTime,
       date1,
-      finishtime,
+      finishTime:meet.finishTime,
       date2,
       employeeId: Math.random(0.8) * 20,
     };
-    // setFinal([...final, payload]);
-    setFinal((final)=>{
-        const updatelist = [...final,payload]
-        return updatelist
-    })
-    console.log(new Date(starttime).getTime());
-    console.log(final, starttime);
-    console.log(filteredList);
+    setFinal([...final, payload]);
+    // setFinal((final)=>{
+    //     const updatelist = [...final,payload]
+    //     return updatelist
+    // })
+ 
   };
   const handleFilter=()=>{
     if(final.length>1){
@@ -53,8 +58,8 @@ function Main() {
           for (var j = i + 1; j < updatedArray.length; j++) {
             if (
               updatedArray[i].dateSec === updatedArray[j].dateSec &&
-              updatedArray[i].date1 === updatedArray[j].date1 &&
-              updatedArray[i].date2 > updatedArray[j].date1
+             ( updatedArray[i].date1 === updatedArray[j].date1 ||
+              updatedArray[i].date2 > updatedArray[j].date1)
             ) {
               updatedArray[j].dateSec = 0;
              // updatedArray[j].date1=null;
@@ -64,49 +69,53 @@ function Main() {
         for(var k=0;k<updatedArray.length;k++){
 
             if (updatedArray[k].dateSec !== 0) {
-              filter.push(updatedArray[i]);
+              filter.push(updatedArray[k]);
             }
         }
-        // console.log(filter);
+        console.log(filter);
         setFinal(filter);
     }
+  }
   console.log(final)
-}
   return (
     <div className="app">
       <div>
         <h1 className="header">React Schedule Meeting</h1>
         <div className="calendar-container">
-          <Calendar onChange={setDate} value={date} name="date" />
+          {/* <Calendar onChange={handelChange} value={meet.date} name="date" /> */}
+          <input type="date" id="birthday" name="date" value={meet.date} onChange={handelChange}></input>
         </div>
-        <div className="text-center">Selected date: {date.toDateString()}</div>
+        <div className="text-center">Selected date: {meet.date}</div>
 
         <input
           type="time"
-          onChange={(e) => {
-            setStarttime(e.target.value);
-          }}
-          name="starttime"
+          onChange={handelChange}
+          name="startTime"
+          value={meet.startTime}
         />
 
         <input
           type="time"
-          onChange={(e) => {
-            setFinishtime(e.target.value);
-          }}
-          name="finishtime"
+          onChange={handelChange}
+          name="finishTime"
+          value={meet.finishTime}
         />
 
-        <h1>{date + "" + starttime + " " + finishtime}</h1>
-        <button onClick={(e)=>handleSubmit(e)}>submit</button>
+        <h1>{meet.date + "" + meet.startTime + " " + meet.finishTime}</h1>
+        <button onClick={handleSubmit}>submit</button>
         <button onClick={handleFilter}>filter</button>
       </div>
       
       
 
       <div>
-        {final.map((e) => {
-          <h2>{e.starttime}</h2>;
+        {final.map((e,i) => {
+          return<div key={i}>
+          <span>{e.startTime}</span>{" "};
+          <span>{e.finishTime}</span>{" "};
+            <span>{e.date}</span>{" "};
+            <span>{ e.employeeId}E</span>
+          </div>
         })}
       </div>
     </div>
